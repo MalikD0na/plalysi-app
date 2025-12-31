@@ -6,8 +6,14 @@ import altair as alt
 def load_data():
     df = pd.read_csv("AirCrachesAnalysis.csv")
 
-    df = df.rename(columns={"Month" : "Month Name"})
-    df = df.rename(columns={"Country/Region" : "Country"})
+    # Rename columns to match expected format
+    df = df.rename(columns={
+        "Month": "Month Name",
+        "Country/Region": "Country",
+        "Sum of Fatalities (air)": "Fatalities (air)",
+        "Sum of Aboard": "Aboard",
+        "Sum of Ground": "Ground"
+    })
     df["Month"] = pd.to_datetime(df["Month Name"], format='%B', errors="coerce").dt.month
     df["Date"] = pd.to_datetime(df[["Year", "Month", "Day"]], errors="coerce")
 
@@ -332,269 +338,118 @@ def load_data():
     df['Aircraft'] = df['Aircraft'].str.replace(r'\s*\(\?\)', '', regex=True)
 
     aircraft_corrections = {
-    'Boeing B 707': 'Boeing 707',
-    'Boeing B 727': 'Boeing 727', 
     'Boeing B 737': 'Boeing 737',
+    'Boeing B 727': 'Boeing 727',
     'Boeing B 747': 'Boeing 747',
-    'Boeing B 757': 'Boeing 757',
-    'Boeing B 767': 'Boeing 767',
-    'Boeing B 777': 'Boeing 777',
-    'Boeing KC': 'Boeing KC-135',
-    'Boeing CH': 'Boeing CH-47',
-    'Boeing 40': 'Boeing 40',
-    'Boeing 377': 'Boeing 377',
-    'Boeing 707': 'Boeing 707',
-    'Boeing 720': 'Boeing 720',
-    'Boeing 727': 'Boeing 727',
-    'Boeing 737': 'Boeing 737',
-    'Boeing 747': 'Boeing 747',
-    'Boeing 777': 'Boeing 777',
-    'Boeing Vertol CH47C': 'Boeing CH-47',
-    'Boeing Vertol CH47B': 'Boeing CH-47',
-    'Boeing Vertol CH': 'Boeing CH-47',
-    'Doublas Dc': 'Douglas DC-3',
-    'Douglas C': 'Douglas C-47',
-    'Douglas DC': 'Douglas DC-3',
-    'Douglas C 47': 'Douglas C-47',
-    'Douglas C 47A': 'Douglas C-47',
-    'Douglas C 47B': 'Douglas C-47',
-    'Douglas C 47C': 'Douglas C-47',
-    'Douglas C 47D': 'Douglas C-47',
-    'Douglas DC 2': 'Douglas DC-2',
+    'Boeing B 707': 'Boeing 707',
+    'Airbus A 300': 'Airbus A300',
+    'Airbus A 320': 'Airbus A320',
+    'Lockheed L 188': 'Lockheed L-188',
     'Douglas DC 3': 'Douglas DC-3',
     'Douglas DC 4': 'Douglas DC-4',
     'Douglas DC 6': 'Douglas DC-6',
-    'Douglas DC 6A': 'Douglas DC-6',
-    'Douglas DC 6B': 'Douglas DC-6',
-    'Douglas DC 7': 'Douglas DC-7',
-    'Douglas DC 8': 'Douglas DC-8',
-    'Douglas DC 9': 'Douglas DC-9',
-    'Douglas C 54': 'Douglas C-54',
-    'Douglas C 54A': 'Douglas C-54',
-    'Douglas C 54B': 'Douglas C-54',
-    'Douglas C 54D': 'Douglas C-54',
-    'Douglas C 118A': 'Douglas C-118',
-    'Douglas C 124C': 'Douglas C-124',
-    'MD Douglas DC': 'McDonnell Douglas DC-9',
-    'McDonnell Douglas DC': 'McDonnell Douglas DC-9',
-    'McDonnell Douglas MD': 'McDonnell Douglas MD-80',
-    'McDonnell Douglas DC 8': 'McDonnell Douglas DC-8',
-    'McDonnell Douglas DC 9': 'McDonnell Douglas DC-9',
-    'McDonnell Douglas DC 10': 'McDonnell Douglas DC-10',
-    'McDonnell Douglas MD 11': 'McDonnell Douglas MD-11',
-    'McDonnell Douglas MD 82': 'McDonnell Douglas MD-82',
-    'McDonnell Douglas MD 90': 'McDonnell Douglas MD-90',
-    'Lockheed C': 'Lockheed C-130',
-    'Lockheed L': 'Lockheed L-1011',
-    'Lockheed 10': 'Lockheed L-10',
-    'Lockheed 14': 'Lockheed L-14',
-    'Lockheed 18': 'Lockheed L-18',
-    'Lockheed Hudson': 'Lockheed Hudson',
-    'Lockheed P': 'Lockheed P-3',
-    'Lockheed 749A': 'Lockheed L-749',
-    'Lockheed 1049G': 'Lockheed L-1049',
-    'Lockheed 1049H': 'Lockheed L-1049',
-    'Lockheed 1011': 'Lockheed L-1011',
-    'Lockheed Martin L': 'Lockheed L-100',
-    'Antonov AN': 'Antonov An-24',
-    'Antonov An': 'Antonov An-24',
-    'Antonov 12': 'Antonov An-12',
-    'Antonov 26': 'Antonov An-26',
-    'Antonov 28': 'Antonov An-28',
-    'Antonov 32': 'Antonov An-32',
-    'Antonov 74': 'Antonov An-74',
-    'Ilyushin IL': 'Ilyushin Il-18',
-    'Ilyushin Il': 'Ilyushin Il-18',
-    'Tupolev TU': 'Tupolev Tu-154',
-    'Tupolev Tu': 'Tupolev Tu-154',
-    'Tupolev 134A': 'Tupolev Tu-134',
-    'Tupolev 154B': 'Tupolev Tu-154',
-    'Tupolev 154M': 'Tupolev Tu-154',
-    'de Havilland Canada DHC': 'de Havilland DHC-6',
-    'de Havilland DHC': 'de Havilland DHC-6',
-    'De Havilland DH': 'de Havilland DH-114',
-    'de Havilland DH': 'de Havilland DH-114',
-    'de Hvilland': 'de Havilland Dragon Rapide',
-    'Fokker F': 'Fokker F-27',
-    'Fokker FG': 'Fokker F.VII',
-    'Vickers Viscount': 'Vickers Viscount',
-    'Vickers Viking': 'Vickers Viking',
-    'Vickers 634': 'Vickers Viking',
-    'Vickers 610': 'Vickers Viking',
-    'Vickers 708': 'Vickers Viscount',
-    'Vickers 745': 'Vickers Viscount',
-    'Vickers 757': 'Vickers Viscount',
-    'Vickers 764': 'Vickers Viscount',
-    'Vickers 785': 'Vickers Viscount',
-    'Vickers 804': 'Vickers Viscount',
-    'Vickers 812': 'Vickers Viscount',
-    'Vickers 815': 'Vickers Viscount',
-    'Vickers 827': 'Vickers Viscount',
-    'Curtis C': 'Curtiss C-46',
-    'Curtiss C': 'Curtiss C-46',
-    'Curtiss JN': 'Curtiss JN-4',
-    'Airbus A300B4': 'Airbus A300',
-    'Airbus A300F': 'Airbus A300',
-    'Airbus A320': 'Airbus A320',
-    'Airbus A330': 'Airbus A330',
-    'Airbus A340': 'Airbus A340',
-    'Cessna 172': 'Cessna 172',
-    'Cessna 177': 'Cessna 177',
-    'Cessna 185': 'Cessna 185',
-    'Cessna 208B': 'Cessna 208',
-    'Cessna 206': 'Cessna 206',
-    'Cessna 402C': 'Cessna 402',
-    'Cessna 501': 'Cessna Citation',
-    'Bell 206': 'Bell 206',
-    'Bell 212': 'Bell 212',
-    'Bell 205': 'Bell 205',
-    'Bell Huey': 'Bell UH-1',
-    'UH': 'Bell UH-60',
-    'Embraer 110': 'Embraer EMB-110',
-    'Embraer 120': 'Embraer EMB-120',
-    'Embraer ERJ': 'Embraer ERJ-190',
-    'Junkers JU': 'Junkers Ju-52',
-    'Junkers F': 'Junkers F-13',
-    'Junkers G': 'Junkers G-31',
-    'Messerschmitt M': 'Messerschmitt M-20',
-    'Catalina Flying Boat': 'Consolidated PBY',
-    'Short Sandringham': 'Short Sandringham',
-    'Sikorsky S': 'Sikorsky S-43',
-    'Consolidated PBY': 'Consolidated PBY',
-    'DC': 'Douglas DC-3',  
-    'PA': 'Piper PA-31',   
-    'VC': 'Vickers Viking', 
+    'Fokker F 27': 'Fokker F-27',
     }
     df['Aircraft'] = df['Aircraft'].replace(aircraft_corrections)
 
-    non_valid_entries = ['??', 'Pepa  -', 'Pindi-Khut  -', 'Taipei -', 'Near ', 'Off ', '?', '-']
-    df['Location'] = df['Location'].replace(non_valid_entries, 'Not Specified')
-
-    df['Operator'] = df['Operator'].fillna('Not Specify')
-
-    spelling_corrections = {
-        'Aeroflot': 'Aeroflot',
-        'USSRAeroflot': 'Aeroflot USSR',
-        'Airways World American Pan': 'Pan American World Airways',
-        'Airways American Pan': 'Pan American Airways',
-        'Airways Grace American Pan': 'Pan American Grace Airways',
-        'Lufthansa Deutsche': 'Deutsche Lufthansa',
-        'Airways Overseas British': 'British Overseas Airways Corporation',
-        'Airways European British': 'British European Airways',
-        'Airways British': 'British Airways',
-        'Force Air U.S. - Military': 'U.S. Air Force',
-        'Army U.S. - Military': 'U.S. Army',
-        'Navy U.S. - Military': 'U.S. Navy',
-        'Force Air Royal - Military': 'Royal Air Force',
-        'Service Mail Aerial US': 'U.S. Aerial Mail Service',
-        'Lines Air United': 'United Air Lines',
-        'Lines Air Eastern': 'Eastern Air Lines',
-        'Lines Air Delta': 'Delta Air Lines',
-        'Airlines American': 'American Airlines',
-        'Airlines Continental': 'Continental Airlines',
-        'Airlines Korean': 'Korean Air',
-        'Airlines China': 'China Airlines',
-        'Force Air Republican Afghan - Military': 'Afghan Republican Air Force',
-        'Corporation Aviation National China': 'China National Aviation Corporation',
-        'Airways Dutch Royal KLM': 'KLM Royal Dutch Airlines',
-        'Airlines Dutch Royal KLM': 'KLM Royal Dutch Airlines',
-        'Aerolinie Ceskoslovenske': 'Czechoslovak Airlines',
-        'Airlines Hungarian Malev': 'Malev Hungarian Airlines',
-        'Airlines Polish Lot': 'LOT Polish Airlines',
-        'Force Air Soviet - Military': 'Soviet Air Force',
-        'Force Air Russian - Military': 'Russian Air Force',
-        'Aviacion de Cubana': 'Cubana de Aviación',
-        'Airlines International Pakistan': 'Pakistan International Airlines',
-        'Corporation Aviation National': 'China National Aviation Corporation',
-        'Swissair': 'Swissair',
-        'Alitalia': 'Alitalia',
-        'Air France': 'Air France',
-        'France Air': 'Air France'
+    aircraft_type_category = {
+    'Douglas DC-3': 'Vintage Commercial',
+    'Douglas DC-4': 'Vintage Commercial',
+    'Douglas DC-6': 'Vintage Commercial',
+    'Lockheed Constellation': 'Vintage Commercial',
+    
+    'Boeing 707': 'Jet Commercial',
+    'Boeing 727': 'Jet Commercial',
+    'Boeing 737': 'Jet Commercial',
+    'Boeing 747': 'Jet Commercial',
+    'Boeing 757': 'Jet Commercial',
+    'Boeing 767': 'Jet Commercial',
+    'Airbus A300': 'Jet Commercial',
+    'Airbus A310': 'Jet Commercial',
+    'Airbus A320': 'Jet Commercial',
+    'McDonnell Douglas DC-9': 'Jet Commercial',
+    'McDonnell Douglas DC-10': 'Jet Commercial',
+    'McDonnell Douglas MD-80': 'Jet Commercial',
+    
+    'Fokker F-27': 'Regional Prop',
+    'ATR 42': 'Regional Prop',
+    'ATR 72': 'Regional Prop',
+    'de Havilland DHC-6': 'Regional Prop',
+    
+    'Cessna 172': 'Light Aircraft',
+    'Cessna 182': 'Light Aircraft',
+    'Piper Cherokee': 'Light Aircraft',
+    'Piper Cub': 'Light Aircraft',
+    
+    'Bell 47': 'Helicopter',
+    'Bell 206': 'Helicopter',
+    'Sikorsky S-61': 'Helicopter',
+    
+    'Not Specified': 'Not Specified',
     }
-    df['Operator'] = df['Operator'].replace(spelling_corrections)
+    df['Aircraft_Category'] = df['Aircraft'].map(aircraft_type_category)
+    df['Aircraft_Category'] = df['Aircraft_Category'].fillna('Not Specify')
 
-    military_standardizations = {
-        'Force Air U.S. Army - Military': 'U.S. Army Air Forces',
-        'Forces Air Army U.S. - Military': 'U.S. Army Air Forces',
-        'Corps Marine U.S. - Military': 'U.S. Marine Corps',
-        'Corps Marine U.S. - VietnamMilitary': 'U.S. Marine Corps',
-        'Army U.S. - VietnamMilitary': 'U.S. Army',
-        'Force Air U.S. - VietnamMilitary': 'U.S. Air Force',
-        'Force Air U.S. - GermanyMilitary': 'U.S. Air Force',
-        'Force Air U.S. - PakistanMilitary': 'U.S. Air Force',
-        'Force Air U.S. - VirginiaMilitary': 'U.S. Air Force',
-        'Force Air U.S. - KoreaMilitary': 'U.S. Air Force',
-        'Force Air U.S. - DekotaMilitary': 'U.S. Air Force',
-        'Force Air U.S. - JerseyMilitary': 'U.S. Air Force',
-        'Force Air U.S. - MexicoMilitary': 'U.S. Air Force',
-        'Force Air U.S. - RicoMilitary': 'U.S. Air Force',
-        'Navy States United - Military': 'U.S. Navy',
-        'Navy US  - Military': 'U.S. Navy',
-        'Navy U.S. - KoreaMilitary': 'U.S. Navy',
-        'Navy U.S. - VietnamMilitary': 'U.S. Navy',
-        'Navy U.S. - IslandsMilitary': 'U.S. Navy',
-        'Navy U.S. - JerseyMilitary': 'U.S. Navy',
-        'Navy German - Military': 'German Navy',
-        'Navy German - SeaMilitary': 'German Navy',
-        'Navy British Royal - Military': 'Royal Navy',
-        'Force Air Canadian Royal - Military': 'Royal Canadian Air Force',
-        'Force Air Royal - LankaMilitary': 'Sri Lankan Air Force',
-        'Force Air Lanka Sri - LankaMilitary': 'Sri Lankan Air Force'
-    }
-    df['Operator'] = df['Operator'].replace(military_standardizations)
+    df['Severity_Level'] = pd.cut(
+        df['Fatalities (air)'],
+        bins=[-1, 0, 10, 50, 100, float('inf')],
+        labels=['No Fatalities', 'Minor (1-10)', 'Moderate (11-50)', 'Severe (51-100)', 'Catastrophic (>100)']
+    )
 
-    df['Fatality_Rate'] = (df['Fatalities (air)'] / df['Aboard']) * 100
     df['Decade'] = (df['Year'] // 10) * 10
-    df['Severity_Level'] = df['Fatality_Rate'].apply(lambda x: 
-    'Minor' if x == 0 else 
-    'Major' if x < 50 else 
-    'Catastrophic' if x < 100 else 
-    'Total Loss' if x == 100 else 'Not Specified')
+    df['Fatality_Rate'] = (df['Fatalities (air)'] / df['Aboard']) * 100
 
-    st.title("Aviation Accidents Historical Analysis Dashboard")
-    st.write(df)
     return df
 
 try:
     df = load_data()
 
-    st.sidebar.header("Filter options")
+    st.title("✈️ Aviation Crash Analysis Dashboard")
+    st.write("""
+        This dashboard provides an interactive analysis of aviation accidents throughout history. 
+        Use the sidebar to filter data and explore various metrics and visualizations.
+    """)
 
+    st.sidebar.header("Filters")
+
+    unique_countries = sorted(df["Country"].unique())
     selected_countries = st.sidebar.multiselect(
-        "Select Country",
-        options=df["Country"].unique(),
-        default=df["Country"].unique()
+        "Select Countries",
+        options=unique_countries,
+        default=unique_countries
     )
 
+    unique_continents = sorted(df["Continent"].unique())
     selected_continents = st.sidebar.multiselect(
-        "Select Continent",
-        options=df["Continent"].unique(),
-        default=df["Continent"].unique()
+        "Select Continents",
+        options=unique_continents,
+        default=unique_continents
     )
 
+    unique_category = sorted(df["Manufacturer_Category"].unique())
     selected_category = st.sidebar.multiselect(
-        "Select Manufacturer Category",
-        options=df["Manufacturer_Category"].unique(),
-        default=df["Manufacturer_Category"].unique()
+        "Select Manufacturer Categories",
+        options=unique_category,
+        default=unique_category
     )
 
-    month_order= ["January", "Febuary", "March", "April", "May", "June", "July", "August", "September", "October", "December"]
+    unique_months = sorted(df["Month Name"].unique(), key=lambda x: pd.to_datetime(x, format='%B', errors='coerce'))
     selected_months = st.sidebar.multiselect(
-        "Select Month",
-        options=month_order,
-        default=month_order
+        "Select Months",
+        options=unique_months,
+        default=unique_months
     )
 
-    Severity_order = ["Minor", "Major", "Catastrophic", "Total Loss"]
+    unique_severity = ['All'] + sorted(df['Severity_Level'].dropna().unique().tolist())
     selected_severity = st.sidebar.selectbox(
         "Select Severity Level",
-        options= ["All"] + Severity_order,
+        options=unique_severity,
         index=0
     )
 
-    unique_decades = sorted(df['Decade'].unique())
+    unique_decades = sorted(df["Decade"].unique())
     decades_range = st.sidebar.slider(
-        'Select Decade Range',
+        "Select Decade Range",
         min_value=int(unique_decades[0]),
         max_value=int(unique_decades[-1]),
         value=(int(unique_decades[0]), int(unique_decades[-1]))
@@ -649,104 +504,100 @@ try:
     )
     st.altair_chart(chart1, use_container_width=True)
 
-    st.header("2. What Is The Average Fatality Rate By Aircraft Type?")
-    q2 = filtered_df.groupby('Aircraft')['Fatality_Rate'].mean().sort_values(ascending=False).head(20)
+    st.header("2. Which Aircraft Manufacturers Have The Most Accidents?")
+    q2 = filtered_df.groupby('Aircraft Manufacturer').size().sort_values(ascending=False).head(10)
     st.write(q2)
-    q2_df = q2.reset_index()
-    chart2 = alt.Chart(q2_df).mark_bar().encode(
-        y=alt.Y("Aircraft:N", sort='-x', title="Aircraft Model"),
-        x=alt.X("Fatality_Rate:Q", title="Average Fatality Rate (%)"),
-        color=alt.Color("Fatality_Rate:Q", scale=alt.Scale(scheme="redpurple")),
-        tooltip=["Aircraft", alt.Tooltip("Fatality_Rate:Q", format=".2f")]
+    q2_df = q2.reset_index(name='Accident_Count')
+    chart2 = alt.Chart(q2_df).mark_bar(color='steelblue').encode(
+        x=alt.X('Accident_Count:Q', title='Number of Accidents'),
+        y=alt.Y('Aircraft Manufacturer:N', sort='-x', title='Manufacturer'),
+        tooltip=['Aircraft Manufacturer', 'Accident_Count']
     ).properties(
-        title="Top 20 Aircraft Models By Average Fatality Rate"
+        title='Top 10 Aircraft Manufacturers By Accident Count'
     )
     st.altair_chart(chart2, use_container_width=True)
 
-    st.header("3. How Do Crash Numbers Vary By Season Across Decades?")
-    filtered_df['Season'] = filtered_df['Month'].apply(lambda m: 
-        'Winter' if m in [12, 1, 2] else 
-        'Spring' if m in [3, 4, 5] else 
-        'Summer' if m in [6, 7, 8] else 'Fall')
-    q3 = filtered_df.groupby(['Decade', 'Season']).size().reset_index(name='Count')
+    st.header("3. What Are The Trends In Aviation Accidents Over Time?")
+    q3 = filtered_df.groupby('Year').size().reset_index(name='Accident_Count')
     st.write(q3)
-    chart3 = alt.Chart(q3).mark_line(point=True).encode(
-        x=alt.X('Decade:O', title='Decade'),
-        y=alt.Y('Count:Q', title='Number of Crashes'),
-        color=alt.Color('Season:N', title='Season'),
-        tooltip=['Decade', 'Season', 'Count']
+    chart3 = alt.Chart(q3).mark_line(point=True, color='green').encode(
+        x=alt.X('Year:O', title='Year'),
+        y=alt.Y('Accident_Count:Q', title='Number of Accidents'),
+        tooltip=['Year', 'Accident_Count']
     ).properties(
-        title='Seasonal Crash Patterns Across Decades'
+        title='Aviation Accidents Over Time'
     )
     st.altair_chart(chart3, use_container_width=True)
 
-    st.header("4. Which Operators Have The Highest Number of Incidents?")
-    q4 = filtered_df.groupby('Operator').size().sort_values(ascending=False).head(15)
-    st.write(q4)
-    q4_df = q4.reset_index(name='Incidents')
-    chart4 = alt.Chart(q4_df).mark_bar(color='steelblue').encode(
-        x=alt.X("Incidents:Q", title="Number of Incidents"),
-        y=alt.Y("Operator:N", sort='-x', title="Operator"),
-        tooltip=["Operator", "Incidents"]
+    st.header("4. Which Months See The Most Accidents?")
+    q4 = filtered_df.groupby('Month Name').size().reset_index(name='Accident_Count')
+    q4['Month_Order'] = pd.to_datetime(q4['Month Name'], format='%B').dt.month
+    q4 = q4.sort_values('Month_Order')
+    st.write(q4[['Month Name', 'Accident_Count']])
+    chart4 = alt.Chart(q4).mark_bar(color='coral').encode(
+        x=alt.X('Month Name:N', sort=list(q4['Month Name']), title='Month'),
+        y=alt.Y('Accident_Count:Q', title='Number of Accidents'),
+        tooltip=['Month Name', 'Accident_Count']
     ).properties(
-        title="Top 15 Operators By Incident Count"
+        title='Accident Distribution By Month'
     )
     st.altair_chart(chart4, use_container_width=True)
 
-    st.header("5. What Is The Relationship Between Passengers Aboard And Survival Rate?")
-    filtered_df['Survival_Count'] = filtered_df['Aboard'] - filtered_df['Fatalities (air)']
-    filtered_df['Survival_Rate'] = (filtered_df['Survival_Count'] / filtered_df['Aboard']) * 100
-    q5 = filtered_df[['Aboard', 'Survival_Rate']].dropna()
-    st.write(q5.describe())
-    chart5 = alt.Chart(q5).mark_circle(size=60, opacity=0.5).encode(
-        x=alt.X('Aboard:Q', title='Passengers Aboard'),
-        y=alt.Y('Survival_Rate:Q', title='Survival Rate (%)'),
-        color=alt.Color('Survival_Rate:Q', scale=alt.Scale(scheme='viridis')),
-        tooltip=['Aboard', alt.Tooltip('Survival_Rate:Q', format='.2f')]
+    st.header("5. What Is The Distribution Of Crash Severity Levels?")
+    q5 = filtered_df['Severity_Level'].value_counts().reset_index()
+    q5.columns = ['Severity_Level', 'Count']
+    st.write(q5)
+    chart5 = alt.Chart(q5).mark_arc().encode(
+        theta=alt.Theta('Count:Q'),
+        color=alt.Color('Severity_Level:N', scale=alt.Scale(scheme='category10')),
+        tooltip=['Severity_Level', 'Count']
     ).properties(
-        title='Passengers Aboard vs Survival Rate'
+        title='Distribution of Crash Severity Levels'
     )
     st.altair_chart(chart5, use_container_width=True)
 
-    st.header("6. How Has Aviation Safety Improved Over Different Decades?")
+    st.header("6. How Do Survival Rates Vary By Decade?")
+    filtered_df['Survival_Count'] = filtered_df['Aboard'] - filtered_df['Fatalities (air)']
     q6 = filtered_df.groupby('Decade').agg({
-        'Fatality_Rate': 'mean',
-        'Fatalities (air)': 'sum'
+        'Survival_Count': 'sum',
+        'Aboard': 'sum'
     }).reset_index()
+    q6['Survival_Rate'] = (q6['Survival_Count'] / q6['Aboard']) * 100
     st.write(q6)
-    base = alt.Chart(q6).encode(x=alt.X('Decade:O', title='Decade'))
-    line1 = base.mark_line(color='red', point=True).encode(
-        y=alt.Y('Fatality_Rate:Q', title='Avg Fatality Rate (%)', axis=alt.Axis(titleColor='red'))
-    )
-    line2 = base.mark_line(color='blue', point=True).encode(
-        y=alt.Y('Fatalities (air):Q', title='Total Fatalities', axis=alt.Axis(titleColor='blue'))
-    )
-    chart6 = alt.layer(line1, line2).resolve_scale(y='independent').properties(
-        title='Safety Improvement Analysis: Fatality Rate & Total Deaths By Decade'
+    chart6 = alt.Chart(q6).mark_line(point=True, color='purple').encode(
+        x=alt.X('Decade:O', title='Decade'),
+        y=alt.Y('Survival_Rate:Q', title='Survival Rate (%)'),
+        tooltip=['Decade', alt.Tooltip('Survival_Rate:Q', format='.2f')]
+    ).properties(
+        title='Survival Rate Trends By Decade'
     )
     st.altair_chart(chart6, use_container_width=True)
 
-    st.header("7. What Percentage Of Crashes Result In Total Loss By Manufacturer Category?")
-    q7 = filtered_df[filtered_df['Severity_Level'] == 'Total Loss'].groupby('Manufacturer_Category').size()
-    total_crashes = filtered_df.groupby('Manufacturer_Category').size()
-    q7_pct = (q7 / total_crashes * 100).sort_values(ascending=False).reset_index()
+    st.header("7. What Percentage Of Accidents Result In Total Loss For Each Manufacturer Category?")
+    q7 = filtered_df.groupby('Manufacturer_Category').agg({
+        'Fatalities (air)': 'sum',
+        'Aboard': 'sum'
+    }).reset_index()
+    q7['Total_Loss_Percentage'] = (q7['Fatalities (air)'] / q7['Aboard']) * 100
+    q7 = q7.sort_values('Total_Loss_Percentage', ascending=False)
+    q7_pct = q7[['Manufacturer_Category', 'Total_Loss_Percentage']]
     q7_pct.columns = ['Manufacturer_Category', 'Total_Loss_Percentage']
     st.write(q7_pct)
     chart7 = alt.Chart(q7_pct).mark_bar().encode(
-        y=alt.Y('Manufacturer_Category:N', sort='-x', title='Manufacturer Category'),
         x=alt.X('Total_Loss_Percentage:Q', title='Total Loss Percentage (%)'),
+        y=alt.Y('Manufacturer_Category:N', sort='-x', title='Manufacturer Category'),
         color=alt.Color('Total_Loss_Percentage:Q', scale=alt.Scale(scheme='reds')),
         tooltip=['Manufacturer_Category', alt.Tooltip('Total_Loss_Percentage:Q', format='.2f')]
     ).properties(
-        title='Total Loss Rate By Manufacturer Category'
+        title='Total Loss Percentage By Manufacturer Category'
     )
     st.altair_chart(chart7, use_container_width=True)
 
-    st.header("8. How Many Ground Casualties Occur Relative To Crash Frequency By Continent?")
+    st.header("8. How Do Ground Casualties Per Crash Compare Across Continents?")
     q8 = filtered_df.groupby('Continent').agg({
         'Ground': 'sum',
-        'Continent': 'count'
-    }).rename(columns={'Continent': 'Crash_Count'})
+        'Country': 'size'
+    }).rename(columns={'Country': 'Crash_Count'})
     q8['Ground_Per_Crash'] = q8['Ground'] / q8['Crash_Count']
     q8 = q8.reset_index()
     st.write(q8)
