@@ -399,6 +399,14 @@ def load_data():
     df['Decade'] = (df['Year'] // 10) * 10
     df['Fatality_Rate'] = (df['Fatalities (air)'] / df['Aboard']) * 100
 
+    # Remove all rows with "Not Specified" or "Not Specify"
+    df = df[df['Country'] != 'Not Specified']
+    df = df[df['Continent'] != 'Not Specify']
+    df = df[df['Aircraft Manufacturer'] != 'Not Specified']
+    df = df[df['Manufacturer_Category'] != 'Not Specify']
+    df = df[df['Aircraft'] != 'Not Specified']
+    df = df[df['Aircraft_Category'] != 'Not Specify']
+
     return df
 
 try:
