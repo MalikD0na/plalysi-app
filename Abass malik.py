@@ -17,6 +17,7 @@ def load_data():
     df["Month"] = pd.to_datetime(df["Month Name"], format='%B', errors="coerce").dt.month
     df["Date"] = pd.to_datetime(df[["Year", "Month", "Day"]], errors="coerce")
 
+    # Remove truly irrelevant values - these are invalid data
     irrelevant_values = [
          '', ' ', '  ', "'-", '10', '100', '110', '116', '18', '325', '570', '800', 'Aaland', 'Aargau', 'Africa', 'Aichi', 'Air', 'Airlines',
     'Arizona', 'Airzona', 'Alberta', 'Algarve', 'Channel', 'Lowa', 'Mt', 'N', 'Chechnya', 'Argyll','Ayrshire', 'Azores', 'Azuay', 'BC',  'Besar',
@@ -24,8 +25,9 @@ def load_data():
     'Crete', 'Corsica', 'Cook', 'Cocos', 'Cheshire', 'N/A', 'NE', 'near', 'North', 'Northern', 'Northwest', 'NSW', 'NWT', 'NYUS', 'off', 'OLD', 'ON', 'PE', 
     'PQ', 'QC', 'Qld.', 'Quebec', 'Queens', 'Queesland', 'SC', 'WYUS', 'West', 'The', 'Sri', 'New', 'St.', 'South-West', 'South', 'SK', 'Saint', 'Saskatchewan', 'Stirlingshire'
     ]
-    df["Country"] = df["Country"].replace(irrelevant_values, "Not Specified")
-    df["Country"] = df["Country"].fillna("Not Specified")
+    # Drop rows with irrelevant country values or NaN
+    df = df[~df["Country"].isin(irrelevant_values)]
+    df = df.dropna(subset=['Country'])
 
     country_corrections = {
     'Alaska': 'United States', ' Alaska': 'United States', 'Alaksa': 'United States', 'Alabama': 'United States', 'California': 'United States', 'Chicago': 'United States',
@@ -161,11 +163,14 @@ def load_data():
     'Not Specified': 'Not Specified'
     }
     df["Continent"] = df["Country"].map(continent)
-    df['Continent'] = df['Continent'].fillna('Not Specify')
+    # Drop rows where continent mapping failed
+    df = df.dropna(subset=['Continent'])
 
     df['Aircraft Manufacturer'] = df['Aircraft Manufacturer'].str.strip()  
     problematic_entries = ['??', '?VH', '?NC21V', 'Unknown /', 'C', 'UH', 'DC', 'PA', 'VC', '?139', '?VP', '?42', '']
-    df['Aircraft Manufacturer'] = df['Aircraft Manufacturer'].replace(problematic_entries, 'Not Specified')
+    # Drop rows with problematic manufacturer entries
+    df = df[~df['Aircraft Manufacturer'].isin(problematic_entries)]
+    df = df.dropna(subset=['Aircraft Manufacturer'])
 
     manufacturer_corrections = {
     'Doublas': 'Douglas',
@@ -330,11 +335,14 @@ def load_data():
     'Not Specified': 'Not Specified',
     }
     df['Manufacturer_Category'] = df['Aircraft Manufacturer'].map(manufacturer_type_category)
-    df['Manufacturer_Category'] = df['Manufacturer_Category'].fillna('Not Specify')
+    # Drop rows where manufacturer category mapping failed
+    df = df.dropna(subset=['Manufacturer_Category'])
 
     df['Aircraft'] = df['Aircraft'].str.strip()
     non_valid_entries = ['??', '?NC21V', '?VH  TAT', 'Unknown / Unknown?', 'C  47(DC', '"Swallow', 'Swallow?"']
-    df['Aircraft'] = df['Aircraft'].replace(non_valid_entries, 'Not Specified')  
+    # Drop rows with invalid aircraft entries
+    df = df[~df['Aircraft'].isin(non_valid_entries)]
+    df = df.dropna(subset=['Aircraft'])
     df['Aircraft'] = df['Aircraft'].str.replace(r'\s*\(\?\)', '', regex=True)
 
     aircraft_corrections = {
@@ -388,7 +396,7 @@ def load_data():
     'Not Specified': 'Not Specified',
     }
     df['Aircraft_Category'] = df['Aircraft'].map(aircraft_type_category)
-    df['Aircraft_Category'] = df['Aircraft_Category'].fillna('Not Specify')
+    # Keep rows even if aircraft category is not mapped (most aircraft won't match)
 
     df['Severity_Level'] = pd.cut(
         df['Fatalities (air)'],
@@ -397,16 +405,14 @@ def load_data():
     )
 
     df['Decade'] = (df['Year'] // 10) * 10
-    df['Fatality_Rate'] = (df['Fatalities (air)'] / df['Aboard']) * 100
+    
+    # Calculate fatality rate only where Aboard > 0 to avoid division by zero
+    df['Fatality_Rate'] = 0
+    df.loc[df['Aboard'] > 0, 'Fatality_Rate'] = (df['Fatalities (air)'] / df['Aboard']) * 100
 
-    # Remove all rows with "Not Specified" or "Not Specify"
-    df = df[df['Country'] != 'Not Specified']
-    df = df[df['Continent'] != 'Not Specify']
-    df = df[df['Aircraft Manufacturer'] != 'Not Specified']
-    df = df[df['Manufacturer_Category'] != 'Not Specify']
-    df = df[df['Aircraft'] != 'Not Specified']
-    df = df[df['Aircraft_Category'] != 'Not Specify']
-
+    # Drop rows with missing critical data
+    df = df.dropna(subset=['Year', 'Fatalities (air)', 'Aboard'])
+    
     return df
 
 try:
